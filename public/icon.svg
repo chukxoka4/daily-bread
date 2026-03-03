@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
+  <g transform="translate(256,240)">
+    <!-- Book shape -->
+    <path d="M-80,-60 C-80,-60 -20,-50 0,-40 C20,-50 80,-60 80,-60 L80,60 C80,60 20,50 0,60 C-20,50 -80,60 -80,60 Z" fill="none" stroke="#F59E0B" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Center line -->
+    <line x1="0" y1="-40" x2="0" y2="60" stroke="#F59E0B" stroke-width="3"/>
+    <!-- Cross above -->
+    <line x1="0" y1="-100" x2="0" y2="-70" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/>
+    <line x1="-15" y1="-88" x2="15" y2="-88" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <text x="256" y="400" text-anchor="middle" fill="#F59E0B" font-family="Arial,sans-serif" font-size="36" font-weight="bold">DAILY BREAD</text>
+</svg>
