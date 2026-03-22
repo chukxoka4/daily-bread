@@ -1,4 +1,4 @@
-const CACHE_NAME = "daily-bread-v1";
+const CACHE_NAME = "daily-bread-v2";
 const STATIC_ASSETS = ["/", "/manifest.json", "/icon.svg"];
 
 // Install: cache static assets
@@ -37,6 +37,21 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Bible JSON files: cache first (they're large and static)
+  if (url.origin === self.location.origin && url.pathname.startsWith("/bibles/")) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        });
+      })
     );
     return;
   }

@@ -1,3 +1,26 @@
+import { fetchLocalBibleText } from "./localBible";
+
+const LOCAL_TRANSLATIONS = ["NIV", "NLT", "MSG"];
+
+export const AVAILABLE_TRANSLATIONS = [
+  { id: "NIV", name: "New International Version" },
+  { id: "NLT", name: "New Living Translation" },
+  { id: "MSG", name: "The Message" },
+  { id: "WEB", name: "World English Bible" },
+];
+
+const TRANSLATION_STORAGE_KEY = "daily-bread-translation";
+
+export function getSavedTranslation(): string {
+  if (typeof window === "undefined") return "NIV";
+  return localStorage.getItem(TRANSLATION_STORAGE_KEY) || "NIV";
+}
+
+export function saveTranslation(translation: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(TRANSLATION_STORAGE_KEY, translation);
+}
+
 const API_BOOK_MAP: Record<string, string> = {
   Psalm: "Psalms",
   "Song of Solomon": "Song of Solomon",
@@ -16,8 +39,6 @@ interface BibleApiResponse {
   error?: string;
 }
 
-// Parse "Genesis 1-2" into { book: "Genesis", start: 1, end: 2 }
-// Parse "Psalm 119:1-88" into { book: "Psalms", start: "119:1-88" } (single fetch)
 function parseReading(reading: string): {
   book: string;
   chapters: number[];
@@ -30,12 +51,10 @@ function parseReading(reading: string): {
   const chaptersStr = parts[2];
   const apiBook = API_BOOK_MAP[bookName] || bookName;
 
-  // If it contains a colon, it's a verse range within a chapter — fetch as-is
   if (chaptersStr.includes(":")) {
     return { book: apiBook, chapters: [], rawRef: `${apiBook} ${chaptersStr}` };
   }
 
-  // If it's a range like "3-4", split into individual chapters
   const rangeMatch = chaptersStr.match(/^(\d+)-(\d+)$/);
   if (rangeMatch) {
     const start = parseInt(rangeMatch[1]);
@@ -47,7 +66,6 @@ function parseReading(reading: string): {
     return { book: apiBook, chapters };
   }
 
-  // Single chapter
   return { book: apiBook, chapters: [parseInt(chaptersStr)] };
 }
 
@@ -93,34 +111,42 @@ async function fetchSingleRef(ref: string): Promise<string> {
     .join("\n");
 }
 
-export async function fetchBibleText(reading: string): Promise<string> {
-  // Check cache first
+async function fetchWebText(reading: string): Promise<string> {
+  const parsed = parseReading(reading);
+
+  if (parsed.rawRef) {
+    return await fetchSingleRef(parsed.rawRef);
+  }
+
+  const parts: string[] = [];
+  for (const ch of parsed.chapters) {
+    const ref = `${parsed.book} ${ch}`;
+    const chapterText = await fetchSingleRef(ref);
+    parts.push(`--- Chapter ${ch} ---\n${chapterText}`);
+  }
+  return parsed.chapters.length === 1
+    ? parts[0].replace(/^--- Chapter \d+ ---\n/, "")
+    : parts.join("\n\n");
+}
+
+export async function fetchBibleText(
+  reading: string,
+  translation: string = "NIV"
+): Promise<string> {
+  const cacheKey = `${translation}:${reading}`;
   const cache = getTextCache();
-  if (cache[reading]) return cache[reading];
+  if (cache[cacheKey]) return cache[cacheKey];
 
   try {
-    const parsed = parseReading(reading);
-
     let text: string;
 
-    if (parsed.rawRef) {
-      // Verse range — single fetch
-      text = await fetchSingleRef(parsed.rawRef);
+    if (LOCAL_TRANSLATIONS.includes(translation)) {
+      text = await fetchLocalBibleText(reading, translation);
     } else {
-      // Fetch each chapter individually (API limit: 1 chapter per request)
-      const parts: string[] = [];
-      for (const ch of parsed.chapters) {
-        const ref = `${parsed.book} ${ch}`;
-        const chapterText = await fetchSingleRef(ref);
-        parts.push(`--- Chapter ${ch} ---\n${chapterText}`);
-      }
-      text =
-        parsed.chapters.length === 1
-          ? parts[0].replace(/^--- Chapter \d+ ---\n/, "")
-          : parts.join("\n\n");
+      text = await fetchWebText(reading);
     }
 
-    setTextCache(reading, text);
+    setTextCache(cacheKey, text);
     return text;
   } catch (error) {
     console.error("Failed to fetch Bible text:", error);

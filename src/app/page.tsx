@@ -10,6 +10,11 @@ import {
   getTotalCompletedDays,
   type DayProgress,
 } from "@/lib/progress";
+import {
+  AVAILABLE_TRANSLATIONS,
+  getSavedTranslation,
+  saveTranslation,
+} from "@/lib/bible";
 import ReadingSection from "@/components/ReadingSection";
 import CompletionScreen from "@/components/CompletionScreen";
 
@@ -38,6 +43,7 @@ export default function Home() {
   });
   const [complete, setComplete] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [translation, setTranslation] = useState("NIV");
 
   useEffect(() => {
     setMounted(true);
@@ -45,6 +51,12 @@ export default function Home() {
     setReading(todayReading || null);
     setProgress(getTodayProgress());
     setComplete(isTodayComplete());
+    setTranslation(getSavedTranslation());
+  }, []);
+
+  const handleTranslationChange = useCallback((id: string) => {
+    setTranslation(id);
+    saveTranslation(id);
   }, []);
 
   const handleComplete = useCallback(
@@ -124,6 +136,24 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Translation picker */}
+        <div className="flex justify-center gap-1.5 mb-6">
+          {AVAILABLE_TRANSLATIONS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleTranslationChange(t.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                translation === t.id
+                  ? "bg-amber-400 text-zinc-900"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+              title={t.name}
+            >
+              {t.id}
+            </button>
+          ))}
+        </div>
+
         {/* Stats bar */}
         <div className="flex justify-center gap-6 mb-8">
           {streak > 0 && (
@@ -148,6 +178,7 @@ export default function Home() {
             isComplete={progress.ot}
             onComplete={() => handleComplete("ot")}
             accentColor="#B45309"
+            translation={translation}
           />
 
           <ReadingSection
@@ -158,6 +189,7 @@ export default function Home() {
             isComplete={progress.psalms}
             onComplete={() => handleComplete("psalms")}
             accentColor="#7C3AED"
+            translation={translation}
           />
 
           <ReadingSection
@@ -166,6 +198,7 @@ export default function Home() {
             isComplete={progress.nt}
             onComplete={() => handleComplete("nt")}
             accentColor="#0369A1"
+            translation={translation}
           />
         </div>
 

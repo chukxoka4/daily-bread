@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { fetchBibleText, getBibleGatewayUrl } from "@/lib/bible";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { fetchBibleText, getBibleGatewayUrl, AVAILABLE_TRANSLATIONS } from "@/lib/bible";
 
 interface ReadingSectionProps {
   label: string;
@@ -9,6 +9,7 @@ interface ReadingSectionProps {
   isComplete: boolean;
   onComplete: () => void;
   accentColor: string;
+  translation: string;
 }
 
 export default function ReadingSection({
@@ -17,11 +18,37 @@ export default function ReadingSection({
   isComplete,
   onComplete,
   accentColor,
+  translation,
 }: ReadingSectionProps) {
   const [text, setText] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const prevTranslation = useRef(translation);
+
+  // Re-fetch text when translation changes while expanded
+  useEffect(() => {
+    if (prevTranslation.current !== translation) {
+      prevTranslation.current = translation;
+      if (expanded && text) {
+        setLoading(true);
+        setError(false);
+        fetchBibleText(reading, translation)
+          .then((t) => {
+            setText(t);
+            setLoading(false);
+          })
+          .catch(() => {
+            setError(true);
+            setLoading(false);
+          });
+      } else {
+        // Clear cached text so next expand fetches the new translation
+        setText("");
+        setError(false);
+      }
+    }
+  }, [translation, expanded, text, reading]);
 
   const handleExpand = useCallback(() => {
     const nextExpanded = !expanded;
@@ -29,7 +56,7 @@ export default function ReadingSection({
 
     if (nextExpanded && !text && !loading && !error) {
       setLoading(true);
-      fetchBibleText(reading)
+      fetchBibleText(reading, translation)
         .then((t) => {
           setText(t);
           setLoading(false);
@@ -39,12 +66,12 @@ export default function ReadingSection({
           setLoading(false);
         });
     }
-  }, [expanded, text, loading, error, reading]);
+  }, [expanded, text, loading, error, reading, translation]);
 
   const handleRetry = useCallback(() => {
     setError(false);
     setLoading(true);
-    fetchBibleText(reading)
+    fetchBibleText(reading, translation)
       .then((t) => {
         setText(t);
         setLoading(false);
@@ -53,9 +80,10 @@ export default function ReadingSection({
         setError(true);
         setLoading(false);
       });
-  }, [reading]);
+  }, [reading, translation]);
 
-  const gatewayUrl = getBibleGatewayUrl(reading, "NIV");
+  const translationName = AVAILABLE_TRANSLATIONS.find((t) => t.id === translation)?.name || translation;
+  const gatewayUrl = getBibleGatewayUrl(reading, translation);
 
   return (
     <div
@@ -160,7 +188,7 @@ export default function ReadingSection({
             {text && (
               <div className="max-h-96 overflow-y-auto">
                 <p className="text-xs text-zinc-400 mb-2 font-medium">
-                  World English Bible (WEB)
+                  {translationName} ({translation})
                 </p>
                 <div className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap font-serif">
                   {text}
