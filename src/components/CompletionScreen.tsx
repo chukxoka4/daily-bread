@@ -2,7 +2,11 @@
 
 import { getCurrentStreak, getTotalCompletedDays } from "@/lib/progress";
 
-export default function CompletionScreen() {
+interface CompletionScreenProps {
+  onReview?: () => void;
+}
+
+export default function CompletionScreen({ onReview }: CompletionScreenProps) {
   const streak = getCurrentStreak();
   const total = getTotalCompletedDays();
 
@@ -43,11 +47,33 @@ export default function CompletionScreen() {
           </div>
         </div>
 
+        {onReview && (
+          <button
+            onClick={onReview}
+            className="mb-8 px-6 py-3 rounded-full border-2 border-white/40 text-white font-semibold text-sm hover:bg-white/10 active:bg-white/20 transition-all duration-200 flex items-center gap-2 mx-auto"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Review Readings
+          </button>
+        )}
+
         <p className="text-green-200 text-sm italic">
           &ldquo;Your word is a lamp to my feet and a light to my
           path.&rdquo;
           <br />
-          <span className="text-xs">— Psalm 119:105</span>
+          <span className="text-xs">&mdash; Psalm 119:105</span>
         </p>
       </div>
     </div>

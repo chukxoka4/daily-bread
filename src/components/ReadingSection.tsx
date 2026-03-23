@@ -10,6 +10,7 @@ interface ReadingSectionProps {
   onComplete: () => void;
   accentColor: string;
   translation: string;
+  readOnly?: boolean;
 }
 
 export default function ReadingSection({
@@ -19,6 +20,7 @@ export default function ReadingSection({
   onComplete,
   accentColor,
   translation,
+  readOnly = false,
 }: ReadingSectionProps) {
   const [text, setText] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -199,7 +201,7 @@ export default function ReadingSection({
         )}
 
         {/* Mark as read button */}
-        {!isComplete && (
+        {!isComplete && !readOnly && (
           <button
             onClick={onComplete}
             className="mt-3 w-full py-3 rounded-xl font-bold text-white text-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98]"

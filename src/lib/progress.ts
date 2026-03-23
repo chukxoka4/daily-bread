@@ -59,6 +59,12 @@ export function isDayComplete(date?: Date): boolean {
   return day ? day.ot && day.psalms && day.nt : false;
 }
 
+export function getProgressByDate(date: Date): DayProgress {
+  const data = loadProgress();
+  const key = getDateKey(date);
+  return data[key] || { ot: false, psalms: false, nt: false };
+}
+
 export function isTodayComplete(): boolean {
   return isDayComplete(new Date());
 }
