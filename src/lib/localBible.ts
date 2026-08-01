@@ -79,7 +79,13 @@ export async function fetchLocalBibleText(
 
   // Parse the reading reference
   const parts = reading.match(/^(.+?)\s+(\d.*)$/);
-  if (!parts) throw new Error(`Cannot parse reading: ${reading}`);
+
+  // Single-chapter books appear bare in the plan (e.g. "Philemon", "Jude", "2 John")
+  if (!parts) {
+    const book = findBook(bible, reading.trim());
+    if (!book) throw new Error(`Cannot parse reading: ${reading}`);
+    return getChapterVerses(book, 1);
+  }
 
   const bookName = parts[1];
   const chaptersStr = parts[2];
