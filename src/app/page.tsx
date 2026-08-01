@@ -258,7 +258,7 @@ export default function Home() {
         </div>
 
         {/* Translation picker */}
-        <div className="flex justify-center gap-1.5 mb-6">
+        <div className="flex flex-wrap justify-center gap-1.5 mb-6">
           {AVAILABLE_TRANSLATIONS.map((t) => (
             <button
               key={t.id}

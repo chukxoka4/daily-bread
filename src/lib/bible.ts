@@ -1,12 +1,15 @@
 import { fetchLocalBibleText } from "./localBible";
 
-const LOCAL_TRANSLATIONS = ["NIV", "NLT", "MSG"];
+const LOCAL_TRANSLATIONS = ["NIV", "NLT", "MSG", "WEB", "ASV", "YLT", "BBE"];
 
 export const AVAILABLE_TRANSLATIONS = [
   { id: "NIV", name: "New International Version" },
   { id: "NLT", name: "New Living Translation" },
   { id: "MSG", name: "The Message" },
   { id: "WEB", name: "World English Bible" },
+  { id: "ASV", name: "American Standard Version" },
+  { id: "YLT", name: "Young's Literal Translation" },
+  { id: "BBE", name: "Bible in Basic English" },
 ];
 
 const TRANSLATION_STORAGE_KEY = "daily-bread-translation";
