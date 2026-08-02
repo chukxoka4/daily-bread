@@ -11,7 +11,7 @@ export default function CompletionScreen({ onReview }: CompletionScreenProps) {
   const total = getTotalCompletedDays();
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-green-500 to-emerald-700 flex items-center justify-center z-50 p-6">
+    <div className="fixed inset-0 bg-gradient-to-b from-green-500 to-emerald-700 flex items-center justify-center z-50 px-6 pt-6 pb-24 overflow-y-auto">
       <div className="text-center text-white max-w-md">
         <div className="text-7xl mb-6 animate-bounce">
           <svg
